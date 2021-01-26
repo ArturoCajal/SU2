@@ -73,7 +73,7 @@ CSolver** CSolverFactory::CreateSolverContainer(ENUM_MAIN_SOLVER kindMainSolver,
       break;
     case NEMO_EULER:
       solver[FLOW_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::NEMO_EULER, solver, geometry, config, iMGLevel);
-      break;    
+      break;
     case INC_NAVIER_STOKES:
       solver[FLOW_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::INC_NAVIER_STOKES, solver, geometry, config, iMGLevel);
       solver[HEAT_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::HEAT, solver, geometry, config, iMGLevel);
@@ -215,8 +215,8 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
   CSolver *genericSolver = nullptr;
 
   ENUM_TURB_MODEL kindTurbModel = static_cast<ENUM_TURB_MODEL>(config->GetKind_Turb_Model());
-  ENUM_TURB_MODEL kindTransModel = static_cast<ENUM_TRANS_MODEL>(config->GetKind_Trans_Model());
-  
+  ENUM_TRANS_MODEL kindTransModel = static_cast<ENUM_TRANS_MODEL>(config->GetKind_Trans_Model());
+
   SolverMetaData metaData;
 
   metaData.solverType = kindSolver;
@@ -265,7 +265,7 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
     case SUB_SOLVER_TYPE::NEMO_EULER:
       genericSolver = CreateNEMOSolver(SUB_SOLVER_TYPE::NEMO_EULER, solver, geometry, config, iMGLevel);
       metaData.integrationType = INTEGRATION_TYPE::MULTIGRID;
-      break;    
+      break;
     case SUB_SOLVER_TYPE::NAVIER_STOKES:
       genericSolver = CreateFlowSolver(SUB_SOLVER_TYPE::NAVIER_STOKES, solver, geometry, config, iMGLevel);
       metaData.integrationType = INTEGRATION_TYPE::MULTIGRID;
@@ -273,7 +273,7 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
     case SUB_SOLVER_TYPE::NEMO_NAVIER_STOKES:
       genericSolver = CreateNEMOSolver(SUB_SOLVER_TYPE::NEMO_NAVIER_STOKES, solver, geometry, config, iMGLevel);
       metaData.integrationType = INTEGRATION_TYPE::MULTIGRID;
-      break;    
+      break;
     case SUB_SOLVER_TYPE::INC_EULER:
       genericSolver = CreateFlowSolver(SUB_SOLVER_TYPE::INC_EULER, solver, geometry, config, iMGLevel);
       metaData.integrationType = INTEGRATION_TYPE::MULTIGRID;
@@ -306,10 +306,6 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
       genericSolver = CreateHeatSolver(solver, geometry, config, iMGLevel, true);
       metaData.integrationType = INTEGRATION_TYPE::DEFAULT;
       break;
-    case SUB_SOLVER_TYPE::TRANSITION:
-      genericSolver = new CTransLMSolver(geometry, config, iMGLevel);
-      metaData.integrationType = INTEGRATION_TYPE::SINGLEGRID;
-      break;
     case SUB_SOLVER_TYPE::TRANSITION: case SUB_SOLVER_TYPE::TRANS_LM: case SUB_SOLVER_TYPE::TRANS_LKE:
       genericSolver = CreateTransSolver(kindTransModel, solver, geometry, config, iMGLevel, false);
       metaData.integrationType = INTEGRATION_TYPE::SINGLEGRID;
@@ -338,7 +334,7 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
       SU2_MPI::Error("No proper allocation found for requested sub solver", CURRENT_FUNCTION);
       break;
   }
-  
+
   if (genericSolver != nullptr)
     allocatedSolvers[genericSolver] = metaData;
 
@@ -500,7 +496,7 @@ CSolver* CSolverFactory::CreateNEMOSolver(SUB_SOLVER_TYPE kindNEMO_Solver, CSolv
       NEMOSolver->Preprocessing(geometry, solver, config, iMGLevel, NO_RK_ITER, RUNTIME_FLOW_SYS, false);
       break;
     case SUB_SOLVER_TYPE::NEMO_NAVIER_STOKES:
-      NEMOSolver = new CNEMONSSolver(geometry, config, iMGLevel);    
+      NEMOSolver = new CNEMONSSolver(geometry, config, iMGLevel);
       break;
     default:
       SU2_MPI::Error("NEMO flow solver not found", CURRENT_FUNCTION);
