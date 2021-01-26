@@ -900,13 +900,15 @@ static const MapType<string, ENUM_TURB_MODEL> Turb_Model_Map = {
  */
 enum ENUM_TRANS_MODEL {
   NO_TRANS_MODEL = 0,  /*!< \brief No transition model. */
-  LM = 1,              /*!< \brief Kind of transition model (Langtry-Menter (LM) for SST and Spalart-Allmaras). */
-  BC = 2               /*!< \brief Kind of transition model (BAS-CAKMAKCIOGLU (BC) for Spalart-Allmaras). */
+  LM  = 1,              /*!< \brief Kind of transition model (Langtry-Menter (LM) for SST and Spalart-Allmaras). */
+  BC  = 2,              /*!< \brief Kind of transition model (BAS-CAKMAKCIOGLU (BC) for Spalart-Allmaras). */
+  LKE = 3               /*!< \brief Kind of transition model (Laminar Kinetic Energy (LKE) for K-Omega-LKE). */
 };
 static const MapType<string, ENUM_TRANS_MODEL> Trans_Model_Map = {
   MakePair("NONE", NO_TRANS_MODEL)
-  MakePair("LM", LM)
-  MakePair("BC", BC)
+  MakePair("LM",  LM)
+  MakePair("BC",  BC)
+  MakePair("LKE", LKE)
 };
 
 /*!
