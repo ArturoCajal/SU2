@@ -1418,11 +1418,11 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
   /*--- Initialize some useful booleans ---*/
   bool euler, ns, NEMO_euler, NEMO_ns, turbulent, adj_euler, adj_ns, adj_turb, fem_euler, fem_ns, fem_turbulent;
   bool spalart_allmaras, neg_spalart_allmaras, e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras, menter_sst;
-  bool fem, heat, transition, template_solver;
+  bool fem, heat, transition, transition_lm, transition_lke, template_solver;
 
   euler = ns = NEMO_euler = NEMO_ns = turbulent = adj_euler = adj_ns = adj_turb = fem_euler = fem_ns = fem_turbulent = false;
   spalart_allmaras = neg_spalart_allmaras = e_spalart_allmaras = comp_spalart_allmaras = e_comp_spalart_allmaras = menter_sst = false;
-  fem = heat = transition = template_solver = false;
+  fem = heat = transition = transition_lm = transition_lke = template_solver = false;
 
   /*--- Assign booleans ---*/
   switch (config->GetKind_Solver()) {
@@ -1446,7 +1446,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     case RANS:
     case DISC_ADJ_RANS:
       ns = compressible = turbulent = true;
-      transition = (config->GetKind_Trans_Model() == LM); break;
+      transition = (config->GetKind_Trans_Model() != NONE); break;
 
     case INC_EULER:
     case DISC_ADJ_INC_EULER:
@@ -1461,7 +1461,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     case DISC_ADJ_INC_RANS:
       ns = incompressible = turbulent = true;
       heat = config->GetWeakly_Coupled_Heat();
-      transition = (config->GetKind_Trans_Model() == LM); break;
+      transition = (config->GetKind_Trans_Model() != NONE); break;
 
     case FEM_EULER:
     case DISC_ADJ_FEM_EULER:
@@ -1515,6 +1515,17 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
         break;
     }
 
+  /*--- Assign transition model booleans ---*/
+
+  if (transition)
+    switch (config->GetKind_Trans_Model()) {
+      case LM:        transition_lm = true;        break;
+      case LKE:       transition_lke = true;    break;
+      default:
+        SU2_MPI::Error("Specified transition model unavailable or none selected", CURRENT_FUNCTION);
+        break;
+    }
+
   /*--- If the Menter SST model is used, store the constants of the model and determine the
         free stream values of the turbulent kinetic energy and dissipation rate. ---*/
 
@@ -1530,11 +1541,11 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
 
   /*--- Number of variables for direct problem ---*/
 
-  if (euler)        nVar_Flow = solver[MESH_0][FLOW_SOL]->GetnVar();
-  if (ns)           nVar_Flow = solver[MESH_0][FLOW_SOL]->GetnVar();
-  if (NEMO_euler)   nVar_NEMO = solver[MESH_0][FLOW_SOL]->GetnVar();
-  if (NEMO_ns)      nVar_NEMO = solver[MESH_0][FLOW_SOL]->GetnVar();
-  if (turbulent)    nVar_Turb = solver[MESH_0][TURB_SOL]->GetnVar();
+  if (euler)        nVar_Flow  = solver[MESH_0][FLOW_SOL]->GetnVar();
+  if (ns)           nVar_Flow  = solver[MESH_0][FLOW_SOL]->GetnVar();
+  if (NEMO_euler)   nVar_NEMO  = solver[MESH_0][FLOW_SOL]->GetnVar();
+  if (NEMO_ns)      nVar_NEMO  = solver[MESH_0][FLOW_SOL]->GetnVar();
+  if (turbulent)    nVar_Turb  = solver[MESH_0][TURB_SOL]->GetnVar();
   if (transition)   nVar_Trans = solver[MESH_0][TRANS_SOL]->GetnVar();
 
   if (fem_euler)    nVar_Flow = solver[MESH_0][FLOW_SOL]->GetnVar();
