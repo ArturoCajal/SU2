@@ -3059,6 +3059,18 @@ public:
 
   /*!
    * \brief A virtual member
+   * \param[in] iMarker - Marker identifier.
+   * \param[in] iVertex - Vertex identifier.
+   * \param[in] iDim - Index of the transition variable (i.e. k is 0 in SST)
+   * \param[in] val_trans_var - Value of the transition variable to be used.
+   */
+  inline virtual void SetInlet_TransVar(unsigned short val_marker,
+                                       unsigned long val_vertex,
+                                       unsigned short val_dim,
+                                       su2double val_trans_var) { }
+
+  /*!
+   * \brief A virtual member
    * \param[in] config - Definition of the particular problem.
    * \param[in] iMarker - Surface marker where the coefficient is computed.
    */
