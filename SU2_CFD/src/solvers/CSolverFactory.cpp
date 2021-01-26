@@ -86,13 +86,31 @@ CSolver** CSolverFactory::CreateSolverContainer(ENUM_MAIN_SOLVER kindMainSolver,
       solver[FLOW_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::NEMO_NAVIER_STOKES, solver, geometry, config, iMGLevel);
       break;
     case RANS:
-      solver[FLOW_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::NAVIER_STOKES, solver, geometry, config, iMGLevel);
-      solver[TURB_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
+      solver[FLOW_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::NAVIER_STOKES, solver, geometry, config, iMGLevel);
+      if (config -> GetKind_Trans_Model() == LKE){
+          solver[TRANS_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::TRANSITION, solver, geometry, config, iMGLevel);
+          solver[TURB_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
+      }
+      else if (config -> GetKind_Trans_Model() == LM){
+          solver[TURB_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
+          solver[TRANS_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::TRANSITION, solver, geometry, config, iMGLevel);
+      }
+      else
+          solver[TURB_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
       break;
     case INC_RANS:
       solver[FLOW_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::INC_NAVIER_STOKES, solver, geometry, config, iMGLevel);
       solver[HEAT_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::HEAT, solver, geometry, config, iMGLevel);
-      solver[TURB_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
+      if (config -> GetKind_Trans_Model() == LKE){
+          solver[TRANS_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::TRANSITION, solver, geometry, config, iMGLevel);
+          solver[TURB_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
+      }
+      else if (config -> GetKind_Trans_Model() == LM){
+          solver[TURB_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
+          solver[TRANS_SOL] = CreateSubSolver(SUB_SOLVER_TYPE::TRANSITION, solver, geometry, config, iMGLevel);
+      }
+      else
+          solver[TURB_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::TURB, solver, geometry, config, iMGLevel);
       solver[RAD_SOL]  = CreateSubSolver(SUB_SOLVER_TYPE::RADIATION, solver, geometry, config, iMGLevel);
       break;
     case HEAT_EQUATION:
@@ -197,6 +215,7 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
   CSolver *genericSolver = nullptr;
 
   ENUM_TURB_MODEL kindTurbModel = static_cast<ENUM_TURB_MODEL>(config->GetKind_Turb_Model());
+  ENUM_TURB_MODEL kindTransModel = static_cast<ENUM_TRANS_MODEL>(config->GetKind_Trans_Model());
   
   SolverMetaData metaData;
 
@@ -291,6 +310,10 @@ CSolver* CSolverFactory::CreateSubSolver(SUB_SOLVER_TYPE kindSolver, CSolver **s
       genericSolver = new CTransLMSolver(geometry, config, iMGLevel);
       metaData.integrationType = INTEGRATION_TYPE::SINGLEGRID;
       break;
+    case SUB_SOLVER_TYPE::TRANSITION: case SUB_SOLVER_TYPE::TRANS_LM: case SUB_SOLVER_TYPE::TRANS_LKE:
+      genericSolver = CreateTransSolver(kindTransModel, solver, geometry, config, iMGLevel, false);
+      metaData.integrationType = INTEGRATION_TYPE::SINGLEGRID;
+      break;
     case SUB_SOLVER_TYPE::TURB: case SUB_SOLVER_TYPE::TURB_SA: case SUB_SOLVER_TYPE::TURB_SST:
       genericSolver = CreateTurbSolver(kindTurbModel, solver, geometry, config, iMGLevel, false);
       metaData.integrationType = INTEGRATION_TYPE::SINGLEGRID;
@@ -356,6 +379,23 @@ CSolver* CSolverFactory::CreateTurbSolver(ENUM_TURB_MODEL kindTurbModel, CSolver
   }
 
   return turbSolver;
+}
+
+CSolver* CSolverFactory::CreateTransSolver(ENUM_TRANS_MODEL kindTransModel, CSolver **solver, CGeometry *geometry, CConfig *config, int iMGLevel, int adjoint){
+
+  CSolver *transSolver = nullptr;
+
+    switch (kindTransModel) {
+      case LM:
+        break;
+      case LKE:
+        break;
+      default:
+        SU2_MPI::Error("Unknown transition model", CURRENT_FUNCTION);
+        break;
+    }
+
+  return transSolver;
 }
 
 CSolver* CSolverFactory::CreateHeatSolver(CSolver **solver, CGeometry *geometry, CConfig *config, int iMGLevel, bool adjoint){
